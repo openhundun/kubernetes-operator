@@ -1,0 +1,11 @@
+{
+  "devDependencies": {
+    "@biomejs/biome": "latest",
+    "@prettier/plugin-xml": "latest",
+    "prettier": "latest",
+    "prettier-plugin-java": "latest",
+    "prettier-plugin-sh": "latest",
+    "prettier-plugin-toml": "2.0.6",
+    "prettier-plugin-yaml": "latest"
+  }
+}

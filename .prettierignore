@@ -1,0 +1,9 @@
+**/*.cjs
+**/*.cts
+**/*.js
+**/*.jsx
+**/*.mjs
+**/*.mts
+**/*.ts
+**/*.tsx
+**/templates/*.yaml

@@ -1,0 +1,70 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: flects.flector.io
+  annotations:
+    helm.sh/resource-policy: keep
+spec:
+  group: flector.io
+  names:
+    kind: Flect
+    plural: flects
+    singular: flect
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      schema:
+        openAPIV3Schema:
+          properties:
+            spec:
+              properties:
+                destinations:
+                  items:
+                    properties:
+                      name:
+                        nullable: true
+                        type: string
+                      namespace:
+                        type: string
+                    required:
+                      - namespace
+                    type: object
+                  type: array
+                source:
+                  properties:
+                    kind:
+                      enum:
+                        - ConfigMap
+                        - Secret
+                      type: string
+                    name:
+                      type: string
+                    namespace:
+                      type: string
+                  required:
+                    - kind
+                    - name
+                    - namespace
+                  type: object
+              required:
+                - destinations
+                - source
+              type: object
+            status:
+              nullable: true
+              properties:
+                message:
+                  nullable: true
+                  type: string
+                synced:
+                  nullable: true
+                  type: boolean
+              type: object
+          required:
+            - spec
+          title: Flect
+          type: object
+      served: true
+      storage: true
+      subresources:
+        status: {}

@@ -1,0 +1,70 @@
+name: flector
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+defaults:
+  run:
+    shell: bash --noprofile --norc -euo pipefail {0}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - run: bash script/flector.sh job__check step__fact
+      - run: bash script/flector.sh job__check step__fmt
+      - run: bash script/flector.sh job__check step__clippy
+      - run: bash script/flector.sh job__check step__crd_diff
+      - run: bash script/flector.sh job__check step__helm_lint
+
+  image:
+    needs: [check]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - run: bash script/flector.sh job__image step__build
+
+  chart:
+    needs: [check]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - env:
+          CHART_REGISTRY_USERNAME: ${{ github.actor }}
+          CHART_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "${CHART_REGISTRY_PASSWORD}" | helm registry login ghcr.io -u "${CHART_REGISTRY_USERNAME}" --password-stdin
+      - run: bash script/flector.sh job__chart step__package
+      - run: bash script/flector.sh job__chart step__push
+
+  e2e:
+    needs: [check, image, chart]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: nolar/setup-k3d-k3s@v1
+        with:
+          version: v1.36.5+k3s1
+          k3d-args: "--no-lb --no-rollback"
+          k3s-args: "--disable=local-storage,metrics-server,servicelb,traefik@server:*"
+      - run: bash script/flector.sh job__e2e step__install
+      - run: bash script/flector.sh job__e2e step__test__configmap_created
+      - run: bash script/flector.sh job__e2e step__test__configmap_updated
+      - run: bash script/flector.sh job__e2e step__test__configmap_deleted
+      - run: bash script/flector.sh job__e2e step__test__secret_created
+      - run: bash script/flector.sh job__e2e step__test__secret_updated
+      - run: bash script/flector.sh job__e2e step__test__secret_deleted
+      - run: bash script/flector.sh job__e2e step__cleanup
