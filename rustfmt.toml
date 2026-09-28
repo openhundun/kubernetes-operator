@@ -1,0 +1,11 @@
+format_macro_bodies            = true
+format_macro_matchers          = true
+group_imports                  = "One"
+imports_granularity            = "Item"
+imports_layout                 = "HorizontalVertical"
+max_width                      = 200
+single_line_if_else_max_width  = 100
+single_line_let_else_max_width = 100
+struct_lit_width               = 100
+struct_variant_width           = 100
+use_field_init_shorthand       = true

@@ -1,0 +1,4 @@
+image:
+  repository: ghcr.io/openhundun/flector
+  tag: 0.0.1
+  pullPolicy: IfNotPresent
